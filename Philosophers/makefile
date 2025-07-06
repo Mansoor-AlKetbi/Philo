@@ -6,24 +6,23 @@
 #    By: mal-ketb <mal-ketb@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/01 12:49:01 by mal-ketb          #+#    #+#              #
-#    Updated: 2025/06/01 12:49:04 by mal-ketb         ###   ########.fr        #
+#    Updated: 2025/07/06 20:05:10 by mal-ketb         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME    = philo
 
 CC      = gcc
-CFLAGS  = -Wall -Wextra -Werror -pthread -I.
+CFLAGS  = -Wall -Wextra -Werror
+THREAD  = -pthread
 
-SRCS    = $(wildcard *.c)
+SRCS    = main.c parsing.c print.c threads.c utils.c
 OBJS    = $(SRCS:.c=.o)
-
-.PHONY: all clean fclean re
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(NAME) $(THREAD)
 
 %.o: %.c philo.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -35,3 +34,5 @@ fclean: clean
 	rm -f $(NAME)
 
 re: fclean all
+
+.PHONY: all clean fclean re
