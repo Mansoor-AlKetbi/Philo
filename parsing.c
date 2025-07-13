@@ -1,52 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.c                                            :+:      :+:    :+:   */
+/*   parsing.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mal-ketb <mal-ketb@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/21 19:53:20 by mal-ketb          #+#    #+#             */
-/*   Updated: 2025/07/06 20:02:51 by mal-ketb         ###   ########.fr       */
+/*   Created: 2025/07/06 20:02:10 by mal-ketb          #+#    #+#             */
+/*   Updated: 2025/07/13 12:05:46 by mal-ketb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-long long	timestamp_ms(void)
-{
-	struct timeval	tv;
-
-	gettimeofday(&tv, NULL);
-	return ((tv.tv_sec * 1000LL) + (tv.tv_usec / 1000LL));
-}
-
-int	is_digit(const char *str)
+int	parse_args(int argc, char **argv, t_data *data)
 {
 	int	i;
 
-	if (!str || *str == '\0')
+	if (argc < 5 || argc > 6)
 		return (0);
-	i = 0;
-	while (str[i])
+	i = 1;
+	while (i < argc)
 	{
-		if (str[i] < '0' || str[i] > '9')
+		if (!is_digit(argv[i]))
 			return (0);
 		i++;
 	}
+	data->num_philos = ft_atoi(argv[1]);
+	data->time_to_die = ft_atoi(argv[2]);
+	data->time_to_eat = ft_atoi(argv[3]);
+	data->time_to_sleep = ft_atoi(argv[4]);
+	if (argc == 6)
+		data->max_meals = ft_atoi(argv[5]);
+	else
+		data->max_meals = -1;
 	return (1);
-}
-
-int	ft_atoi(const char *str)
-{
-	long	result;
-	int		i;
-
-	result = 0;
-	i = 0;
-	while (str[i] >= '0' && str[i] <= '9')
-	{
-		result = result * 10 + (str[i] - '0');
-		i++;
-	}
-	return ((int)result);
 }

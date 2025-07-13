@@ -6,16 +6,21 @@
 /*   By: mal-ketb <mal-ketb@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/01 12:47:06 by mal-ketb          #+#    #+#             */
-/*   Updated: 2025/07/06 20:04:01 by mal-ketb         ###   ########.fr       */
+/*   Updated: 2025/07/13 12:08:03 by mal-ketb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 static void	init_data(t_data *data)
 {
 	int	i;
 
+	data->someone_died = false;
 	data->start_time_ms = timestamp_ms();
 	pthread_mutex_init(&data->print_lock, NULL);
 	data->forks = malloc(sizeof(pthread_mutex_t) * data->num_philos);

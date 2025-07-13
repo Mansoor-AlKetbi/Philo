@@ -6,7 +6,7 @@
 /*   By: mal-ketb <mal-ketb@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 19:06:40 by mal-ketb          #+#    #+#             */
-/*   Updated: 2025/07/06 20:03:37 by mal-ketb         ###   ########.fr       */
+/*   Updated: 2025/07/13 12:42:22 by mal-ketb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,23 @@
 
 static void	take_forks(t_philo *ph)
 {
-	if (ph->id % 2)
+	pthread_mutex_t	*first;
+	pthread_mutex_t	*second;
+
+	if (ph->left_fork < ph->right_fork)
 	{
-		pthread_mutex_lock(ph->right_fork);
-		print_log(ph->rules, ph->id, "has taken a fork\n");
-		pthread_mutex_lock(ph->left_fork);
-		print_log(ph->rules, ph->id, "has taken a fork\n");
+		first = ph->left_fork;
+		second = ph->right_fork;
 	}
 	else
 	{
-		pthread_mutex_lock(ph->left_fork);
-		print_log(ph->rules, ph->id, "has taken a fork\n");
-		pthread_mutex_lock(ph->right_fork);
-		print_log(ph->rules, ph->id, "has taken a fork\n");
+		first = ph->right_fork;
+		second = ph->left_fork;
 	}
+	pthread_mutex_lock(first);
+	print_log(ph->rules, ph->id, "has taken a fork\n");
+	pthread_mutex_lock(second);
+	print_log(ph->rules, ph->id, "has taken a fork\n");
 }
 
 static void	put_forks(t_philo *ph)
@@ -45,8 +48,7 @@ static int	check_end(t_philo *phs)
 	done = 1;
 	while (i < phs[0].rules->num_philos)
 	{
-		if (timestamp_ms() - phs[i].last_meal_ms
-			> phs[i].rules->time_to_die)
+		if (timestamp_ms() - phs[i].last_meal_ms > phs[i].rules->time_to_die)
 			return (i);
 		if (phs[i].rules->max_meals > 0
 			&& phs[i].meals_taken < phs[i].rules->max_meals)
@@ -71,8 +73,7 @@ void	*philosopher_routine(void *arg)
 		usleep(ph->rules->time_to_eat * 1000);
 		ph->meals_taken++;
 		put_forks(ph);
-		if (ph->rules->max_meals > 0
-			&& ph->meals_taken >= ph->rules->max_meals)
+		if (ph->rules->max_meals > 0 && ph->meals_taken >= ph->rules->max_meals)
 			break ;
 		print_log(ph->rules, ph->id, "is sleeping\n");
 		usleep(ph->rules->time_to_sleep * 1000);
@@ -97,7 +98,7 @@ void	*monitor_routine(void *arg)
 				phs[idx].id, "died\n");
 			break ;
 		}
-		if (idx == -1)
+		if (phs[0].rules->max_meals > 0 && idx == -1)
 			break ;
 		usleep(1000);
 	}
