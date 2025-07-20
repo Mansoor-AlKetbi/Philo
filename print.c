@@ -6,7 +6,7 @@
 /*   By: mal-ketb <mal-ketb@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/01 12:39:04 by mal-ketb          #+#    #+#             */
-/*   Updated: 2025/07/13 12:10:31 by mal-ketb         ###   ########.fr       */
+/*   Updated: 2025/07/19 18:27:28 by mal-ketb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,17 @@
 
 void	print_log(t_data *rules, int philo_id, const char *msg)
 {
-	long long	t;
+	long long	time;
+	int			philo_num;
 
-	t = timestamp_ms() - rules->start_time_ms;
+	time = timestamp_ms() - rules->start_time_ms;
+	philo_num = philo_id + 1;
 	pthread_mutex_lock(&rules->print_lock);
 	if (!rules->someone_died || msg[0] == 'd')
-		printf("%lld %d %s", t, philo_id + 1, msg);
+	{
+		printf("%lld %d %s", time, philo_num, msg);
+		if (msg[0] == 'd')
+			rules->someone_died = 1;
+	}
 	pthread_mutex_unlock(&rules->print_lock);
 }

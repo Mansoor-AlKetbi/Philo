@@ -6,11 +6,11 @@
 /*   By: mal-ketb <mal-ketb@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/21 19:53:20 by mal-ketb          #+#    #+#             */
-/*   Updated: 2025/07/13 12:38:53 by mal-ketb         ###   ########.fr       */
+/*   Updated: 2025/07/20 17:44:49 by mal-ketb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <sys/time.h>   /* ← must come first for gettimeofday() */
+#include <sys/time.h>
 #include "philo.h"
 
 long long	timestamp_ms(void)
@@ -18,7 +18,7 @@ long long	timestamp_ms(void)
 	struct timeval	tv;
 
 	gettimeofday(&tv, NULL);
-	return ((tv.tv_sec * 1000LL) + (tv.tv_usec / 1000LL));
+	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
 }
 
 int	is_digit(const char *str)
