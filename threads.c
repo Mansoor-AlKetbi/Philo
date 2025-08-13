@@ -6,7 +6,7 @@
 /*   By: mal-ketb <mal-ketb@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 19:06:40 by mal-ketb          #+#    #+#             */
-/*   Updated: 2025/07/20 17:13:29 by mal-ketb         ###   ########.fr       */
+/*   Updated: 2025/08/13 18:44:11 by mal-ketb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,31 +14,28 @@
 
 static void	take_forks(t_philo *ph)
 {
-	pthread_mutex_t	*first;
-	pthread_mutex_t	*second;
-
 	if (ph->rules->num_philos == 1)
 	{
 		pthread_mutex_lock(ph->left_fork);
 		print_log(ph->rules, ph->id, "has taken a fork\n");
-		while (!ph->rules->someone_died)
-			usleep(1000);
+		precise_sleep_routine(ph->rules->time_to_die, ph->rules);
+		pthread_mutex_unlock(ph->left_fork);
 		return ;
 	}
-	if (ph->left_fork < ph->right_fork)
+	if (ph->id % 2 == 0)
 	{
-		first = ph->left_fork;
-		second = ph->right_fork;
+		pthread_mutex_lock(ph->right_fork);
+		print_log(ph->rules, ph->id, "has taken a fork\n");
+		pthread_mutex_lock(ph->left_fork);
+		print_log(ph->rules, ph->id, "has taken a fork\n");
 	}
 	else
 	{
-		first = ph->right_fork;
-		second = ph->left_fork;
+		pthread_mutex_lock(ph->left_fork);
+		print_log(ph->rules, ph->id, "has taken a fork\n");
+		pthread_mutex_lock(ph->right_fork);
+		print_log(ph->rules, ph->id, "has taken a fork\n");
 	}
-	pthread_mutex_lock(first);
-	print_log(ph->rules, ph->id, "has taken a fork\n");
-	pthread_mutex_lock(second);
-	print_log(ph->rules, ph->id, "has taken a fork\n");
 }
 
 static void	put_forks(t_philo *ph)
@@ -54,29 +51,29 @@ static void	put_forks(t_philo *ph)
 
 static int	check_end(t_philo *phs)
 {
-	t_data		*data;
+	t_data		*d;
 	int			i;
-	long long	current_time;
-	int			meals_finished;
+	int			finished;
+	long long	now;
 
-	data = phs->rules;
+	d = phs->rules;
 	i = 0;
-	meals_finished = 0;
-	current_time = timestamp_ms();
-	while (i < phs[0].rules->num_philos)
+	finished = 0;
+	now = timestamp_ms();
+	while (i < d->num_philos)
 	{
-		pthread_mutex_lock(&data->print_lock);
-		if (current_time - phs[i].last_meal_ms >= phs[i].rules->time_to_die)
+		pthread_mutex_lock(&phs[i].meal_lock);
+		if (now - phs[i].last_meal_ms >= d->time_to_die)
 		{
-			pthread_mutex_unlock(&data->print_lock);
+			pthread_mutex_unlock(&phs[i].meal_lock);
 			return (i);
 		}
-		if (data->max_meals > 0 && phs[i].meals_taken >= data->max_meals)
-			meals_finished++;
-		pthread_mutex_unlock(&data->print_lock);
+		if (d->max_meals > 0 && phs[i].meals_taken >= d->max_meals)
+			finished++;
+		pthread_mutex_unlock(&phs[i].meal_lock);
 		i++;
 	}
-	if (data->max_meals > 0 && meals_finished == data->num_philos)
+	if (d->max_meals > 0 && finished == d->num_philos)
 		return (-2);
 	return (-1);
 }
@@ -87,25 +84,38 @@ void	*philosopher_routine(void *arg)
 
 	ph = (t_philo *)arg;
 	if (ph->id % 2 == 0)
-		usleep(ph->rules->time_to_eat * 500);
-	while (!ph->rules->someone_died)
+		usleep(1000);
+	while (!stop_flag(ph->rules))
 	{
+		if (ph->rules->num_philos % 2 == 1)
+        	precise_sleep_routine(ph->rules->time_to_eat / 2, ph->rules);
 		take_forks(ph);
+		if (stop_flag(ph->rules))
+		{
+			put_forks(ph);
+			break ;
+		}
 		print_log(ph->rules, ph->id, "is eating\n");
-		pthread_mutex_lock(&ph->rules->print_lock);
+		pthread_mutex_lock(&ph->meal_lock);
 		ph->last_meal_ms = timestamp_ms();
-		pthread_mutex_unlock(&ph->rules->print_lock);
-		usleep(ph->rules->time_to_eat * 1000);
+		pthread_mutex_unlock(&ph->meal_lock);
+		precise_sleep_routine(ph->rules->time_to_eat, ph->rules);
 		put_forks(ph);
+		pthread_mutex_lock(&ph->meal_lock);
 		ph->meals_taken++;
 		if (ph->rules->max_meals > 0 && ph->meals_taken >= ph->rules->max_meals)
+		{
+			pthread_mutex_unlock(&ph->meal_lock);
 			break ;
+		}
+		pthread_mutex_unlock(&ph->meal_lock);
 		print_log(ph->rules, ph->id, "is sleeping\n");
-		usleep(ph->rules->time_to_sleep * 1000);
+		precise_sleep_routine(ph->rules->time_to_sleep, ph->rules);
 		print_log(ph->rules, ph->id, "is thinking\n");
 	}
 	return (NULL);
 }
+
 
 void	*monitor_routine(void *arg)
 {

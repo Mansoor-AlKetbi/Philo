@@ -6,7 +6,7 @@
 /*   By: mal-ketb <mal-ketb@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/21 19:53:20 by mal-ketb          #+#    #+#             */
-/*   Updated: 2025/07/20 17:44:49 by mal-ketb         ###   ########.fr       */
+/*   Updated: 2025/08/13 17:55:13 by mal-ketb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,4 +60,23 @@ int	ft_atoi(const char *str)
 		i++;
 	}
 	return (result * sign);
+}
+
+void precise_sleep_routine(long long ms, t_data *rules)
+{
+	long long start_time;
+
+	start_time = timestamp_ms();
+	while (!rules->someone_died && (timestamp_ms() - start_time) < ms)
+		usleep(100); // Sleep in small increments to allow for checking the condition
+}
+
+int stop_flag(t_data *d)
+{
+	int	x;
+
+	pthread_mutex_lock(&d->print_lock);
+	x = d->someone_died;
+	pthread_mutex_unlock(&d->print_lock);
+	return (x);
 }

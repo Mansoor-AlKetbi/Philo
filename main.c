@@ -6,7 +6,7 @@
 /*   By: mal-ketb <mal-ketb@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/01 12:47:06 by mal-ketb          #+#    #+#             */
-/*   Updated: 2025/07/20 17:19:38 by mal-ketb         ###   ########.fr       */
+/*   Updated: 2025/08/13 18:20:13 by mal-ketb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ static void	launch_philos(t_data *data, t_philo *philos, pthread_t *threads,
 	philos[i].left_fork = &data->forks[i];
 	philos[i].right_fork = &data->forks[(i + 1) % data->num_philos];
 	philos[i].rules = data;
+	pthread_mutex_init(&philos[i].meal_lock, NULL);
 	pthread_create(&threads[i], NULL, philosopher_routine, &philos[i]);
 }
 
@@ -59,7 +60,7 @@ static void	spawn_philosophers(t_data *data, t_philo *philos,
 		launch_philos(data, philos, threads, i);
 		i += 2;
 	}
-	usleep(data->time_to_eat * 500);
+	usleep(1000);
 	i = 1;
 	while (i < data->num_philos)
 	{
@@ -76,8 +77,17 @@ static void	cleanup(t_data *data, t_philo *philos, pthread_t *threads)
 	{
 		i = 0;
 		while (i < data->num_philos)
-			pthread_mutex_destroy(&data->forks[i++]);
+		{
+			pthread_mutex_destroy(&data->forks[i]);
+			i++;
+		}
 		free(data->forks);
+	}
+	i = 0;
+	while (philos && i < data->num_philos)
+	{
+		pthread_mutex_destroy(&philos[i].meal_lock);
+		i++;
 	}
 	pthread_mutex_destroy(&data->print_lock);
 	if (philos)
@@ -85,6 +95,7 @@ static void	cleanup(t_data *data, t_philo *philos, pthread_t *threads)
 	if (threads)
 		free(threads);
 }
+
 
 int	main(int argc, char **argv)
 {

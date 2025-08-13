@@ -6,7 +6,7 @@
 /*   By: mal-ketb <mal-ketb@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/21 20:25:09 by mal-ketb          #+#    #+#             */
-/*   Updated: 2025/07/06 20:09:07 by mal-ketb         ###   ########.fr       */
+/*   Updated: 2025/08/13 18:22:18 by mal-ketb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ typedef struct s_philo
 	pthread_mutex_t		*left_fork;
 	pthread_mutex_t		*right_fork;
 	t_data				*rules;
+	pthread_mutex_t		meal_lock;
 }						t_philo;
 
 typedef struct s_data
@@ -55,5 +56,7 @@ int						parse_args(int argc, char **argv, t_data *data);
 
 void					*philosopher_routine(void *arg);
 void					*monitor_routine(void *arg);
+void precise_sleep_routine(long long ms, t_data *rules);
+int stop_flag(t_data *d);
 
 #endif
